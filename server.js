@@ -1,3 +1,4 @@
+if (!global.File) { global.File = require('buffer').File; }
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
