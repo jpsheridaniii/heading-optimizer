@@ -4,149 +4,217 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Heading Optimizer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --cyan:   #00D9FF;
+      --amber:  #F59E0B;
+      --red:    #EF4444;
+      --green:  #22C55E;
+      --gray:   #9CA3AF;
+      --bg:     #080c10;
+      --bg2:    #0d1520;
+      --bg3:    #111d2b;
+      --border: #1a2535;
+      --muted:  #6B7280;
+      --text:   #E5E7EB;
+    }
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #f5f6fa;
-      color: #1a1a2e;
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg);
+      color: var(--text);
       min-height: 100vh;
-      padding: 2rem;
+      font-size: 14px;
+      line-height: 1.5;
     }
-    .container { max-width: 1100px; margin: 0 auto; }
-    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 0.25rem; color: #1a1a2e; }
-    .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 2rem; }
+
+    /* ── Header ── */
+    .report-header {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(8,12,16,0.97); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+    }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .logo-mark {
+      width: 32px; height: 32px; background: var(--cyan); border-radius: 4px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 800; color: #000; flex-shrink: 0;
+    }
+    .header-title { font-size: 1rem; font-weight: 700; color: #fff; }
+    .header-title span { color: var(--cyan); }
+    .header-sub { font-size: 0.7rem; color: var(--muted); }
+
+    /* ── Layout ── */
+    .main { max-width: 1100px; margin: 0 auto; padding: 2rem; }
+
+    /* ── Panels ── */
     .panel {
-      background: white;
-      border-radius: 12px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 0;
       padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+      margin-bottom: 1.25rem;
     }
-    .panel h2 { font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.08em; color: #888; margin-bottom: 1rem; }
+    .panel-title {
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--cyan); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+
+    /* ── Inputs ── */
     .row { display: flex; gap: 0.75rem; align-items: flex-end; flex-wrap: wrap; }
-    input[type="text"], input[type="url"] {
+    input[type="text"], input[type="url"], input[type="password"] {
       flex: 1; min-width: 200px;
       padding: 0.6rem 0.9rem;
-      border: 1.5px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 0.95rem;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 0;
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
       outline: none;
       transition: border-color 0.2s;
     }
-    input:focus { border-color: #4f46e5; }
+    input::placeholder { color: var(--muted); }
+    input:focus { border-color: var(--cyan); }
+
+    /* ── Buttons ── */
     button {
       padding: 0.6rem 1.2rem;
       border: none;
-      border-radius: 8px;
-      font-size: 0.9rem;
+      border-radius: 0;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.8rem;
       font-weight: 600;
       cursor: pointer;
       transition: opacity 0.2s, transform 0.1s;
       white-space: nowrap;
+      letter-spacing: 0.03em;
     }
     button:active { transform: scale(0.98); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn-blue { background: #4f46e5; color: white; }
-    .btn-green { background: #16a34a; color: white; }
-    .btn-gray { background: #e5e7eb; color: #374151; }
-    .status { font-size: 0.85rem; color: #555; margin-top: 0.75rem; min-height: 1.2rem; }
-    .status.error { color: #dc2626; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
-    th {
-      background: #f8f9fb;
-      padding: 0.65rem 0.75rem;
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-cyan  { background: var(--cyan);  color: #000; }
+    .btn-green { background: var(--green); color: #000; }
+    .btn-muted { background: var(--bg3); color: var(--gray); border: 1px solid var(--border); }
+
+    /* ── Status ── */
+    .status { font-size: 0.8rem; color: var(--muted); margin-top: 0.75rem; min-height: 1.2rem; }
+    .status.error { color: var(--red); }
+    .status.ok    { color: var(--green); }
+
+    /* ── API key saved ── */
+    .api-key-saved { font-size: 0.78rem; color: var(--green); font-weight: 600; }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead th {
+      background: var(--bg3);
+      padding: 0.6rem 0.75rem;
       text-align: left;
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      color: #888;
-      border-bottom: 1.5px solid #e8e8ee;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+      font-weight: 600;
     }
-    td {
+    tbody td {
       padding: 0.65rem 0.75rem;
-      border-bottom: 1px solid #f0f0f5;
+      border-bottom: 1px solid var(--border);
       vertical-align: top;
+      color: var(--text);
     }
-    tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafafe; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: var(--bg3); }
+
+    /* ── Level badge ── */
     .badge {
       display: inline-block;
       padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.75rem;
+      border-radius: 0;
+      font-size: 0.72rem;
       font-weight: 700;
-      background: #ede9fe;
-      color: #5b21b6;
+      background: #00D9FF15;
+      color: var(--cyan);
+      border: 1px solid #00D9FF30;
     }
-    .char-count { font-size: 0.8rem; color: #888; }
-    .char-over { color: #dc2626; font-weight: 700; }
-    .notes-cell { font-size: 0.82rem; color: #666; font-style: italic; }
+
+    /* ── Char counts ── */
+    .char-ok   { color: var(--cyan);  font-weight: 600; }
+    .char-over { color: var(--red);   font-weight: 700; }
+    .char-none { color: var(--muted); }
+
+    /* ── Notes ── */
+    .notes-cell { font-size: 0.78rem; color: var(--muted); font-style: italic; }
+
+    /* ── Actions ── */
     .actions { display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: flex-end; }
-    .empty-state { text-align: center; padding: 3rem; color: #aaa; font-size: 0.9rem; }
-    .api-key-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
-    .api-key-saved { font-size: 0.8rem; color: #16a34a; font-weight: 600; }
-    input[type="password"] {
-      flex: 1; min-width: 200px;
-      padding: 0.6rem 0.9rem;
-      border: 1.5px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    input[type="password"]:focus { border-color: #4f46e5; }
+
+    /* ── Empty state ── */
+    .empty-state { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.85rem; }
   </style>
 </head>
 <body>
-<div class="container">
-  <h1>🔤 Heading Optimizer</h1>
-  <p class="subtitle">Pull H1–H6 tags from any URL and optimize them with Claude AI</p>
+
+<header class="report-header">
+  <div class="header-left">
+    <div class="logo-mark">HO</div>
+    <div>
+      <div class="header-title">Heading Optimizer <span>&middot;</span> Claude AI</div>
+      <div class="header-sub">Built by JPSDevelops</div>
+    </div>
+  </div>
+</header>
+
+<main class="main">
 
   <div class="panel">
-    <h2>API Key</h2>
-    <div class="api-key-row">
+    <div class="panel-title">🔑 Anthropic API Key</div>
+    <div class="row">
       <input type="password" id="apiKey" placeholder="sk-ant-..." />
-      <button class="btn-blue" onclick="saveApiKey()">Save Key</button>
+      <button class="btn-cyan" onclick="saveApiKey()">Save Key</button>
       <span class="api-key-saved" id="apiKeySaved" style="display:none">✓ Key saved</span>
     </div>
   </div>
 
   <div class="panel">
-    <h2>Step 1 — Pull Headings</h2>
+    <div class="panel-title">📥 Step 1 — Pull Headings</div>
     <div class="row">
       <input type="url" id="pageUrl" placeholder="https://example.com/page-to-audit" />
-      <button class="btn-blue" id="pullBtn" onclick="pullHeadings()">Pull Headings → Column A</button>
+      <button class="btn-cyan" id="pullBtn" onclick="pullHeadings()">Pull Headings</button>
     </div>
     <div class="status" id="pullStatus"></div>
   </div>
 
   <div class="panel">
-    <h2>Step 2 — Optimize</h2>
+    <div class="panel-title">⚡ Step 2 — Optimize with Claude</div>
     <div class="row">
       <input type="text" id="keyword" placeholder="Primary keyword / topic focus (e.g. emergency HVAC repair Dallas)" />
-      <button class="btn-green" id="optimizeBtn" onclick="optimizeHeadings()" disabled>Optimize → Column B</button>
+      <button class="btn-green" id="optimizeBtn" onclick="optimizeHeadings()" disabled>Optimize Headings</button>
     </div>
     <div class="status" id="optimizeStatus"></div>
   </div>
 
   <div class="panel">
-    <h2>Results</h2>
-    <div id="tableContainer">
+    <div class="panel-title">📊 Results</div>
+    <div class="table-wrap" id="tableContainer">
       <div class="empty-state">Pull headings from a URL to get started.</div>
     </div>
     <div class="actions" id="actions" style="display:none">
-      <button class="btn-gray" onclick="copyCSV()">📋 Copy as CSV</button>
+      <button class="btn-muted" onclick="copyCSV()">📋 Copy as CSV</button>
     </div>
   </div>
-</div>
+
+</main>
 
 <script>
   let headings = [];
   let results = [];
 
-  // Load saved API key on page load
   window.addEventListener('DOMContentLoaded', () => {
     const saved = localStorage.getItem('anthropic_api_key');
     if (saved) {
@@ -169,12 +237,13 @@
   function setStatus(id, msg, isError = false) {
     const el = document.getElementById(id);
     el.textContent = msg;
-    el.className = 'status' + (isError ? ' error' : '');
+    el.className = 'status' + (isError ? ' error' : ' ok');
+    if (!msg) el.className = 'status';
   }
 
   function charClass(count, level) {
     const limit = level === 'H1' ? 70 : 60;
-    return count > limit ? 'char-count char-over' : 'char-count';
+    return count > limit ? 'char-over' : 'char-ok';
   }
 
   async function pullHeadings() {
@@ -198,7 +267,7 @@
       headings = data.headings;
       results = headings.map(h => ({ original: h.text, optimized: '', level: h.level, notes: '' }));
 
-      setStatus('pullStatus', `✅ Found ${headings.length} headings.`);
+      setStatus('pullStatus', `✓ Found ${headings.length} headings.`);
       document.getElementById('optimizeBtn').disabled = false;
       renderTable();
     } catch (err) {
@@ -228,7 +297,7 @@
       if (!res.ok) throw new Error(data.error);
 
       results = data.results;
-      setStatus('optimizeStatus', `✅ Optimized ${results.length} headings.`);
+      setStatus('optimizeStatus', `✓ Optimized ${results.length} headings.`);
       renderTable();
     } catch (err) {
       setStatus('optimizeStatus', `Error: ${err.message}`, true);
@@ -245,10 +314,10 @@
       const bLen = r.optimized ? r.optimized.length : 0;
       return `<tr>
         <td>${escHtml(r.original)}</td>
-        <td>${r.optimized ? escHtml(r.optimized) : '<span style="color:#ccc">—</span>'}</td>
+        <td>${r.optimized ? escHtml(r.optimized) : '<span style="color:var(--muted)">—</span>'}</td>
         <td><span class="badge">${r.level}</span></td>
         <td class="${charClass(aLen, r.level)}">${aLen}</td>
-        <td class="${bLen ? charClass(bLen, r.level) : 'char-count'}">${bLen || '—'}</td>
+        <td class="${bLen ? charClass(bLen, r.level) : 'char-none'}">${bLen || '—'}</td>
         <td class="notes-cell">${r.notes ? escHtml(r.notes) : ''}</td>
       </tr>`;
     }).join('');

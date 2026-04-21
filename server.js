@@ -1,9 +1,7 @@
-if (!global.File) { global.File = require('buffer').File; }
 require('dotenv').config();
 const express = require('express');
 const axios = require('axios');
 const cheerio = require('cheerio');
-const Anthropic = require('@anthropic-ai/sdk');
 const cors = require('cors');
 const path = require('path');
 
@@ -46,8 +44,6 @@ app.post('/api/optimize', async (req, res) => {
   if (!headings || !headings.length) return res.status(400).json({ error: 'No headings provided' });
   if (!apiKey) return res.status(400).json({ error: 'API key is required' });
 
-  const anthropic = new Anthropic({ apiKey });
-
   const headingList = headings
     .map((h, i) => `${i + 1}. [${h.level}] ${h.text}`)
     .join('\n');
@@ -75,17 +71,28 @@ Respond ONLY with a JSON array in this exact format, no preamble, no markdown:
 ]`;
 
   try {
-    const message = await anthropic.messages.create({
-      model: 'claude-opus-4-7',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content: prompt }]
-    });
+    const response = await axios.post(
+      'https://api.anthropic.com/v1/messages',
+      {
+        model: 'claude-opus-4-7',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }]
+      },
+      {
+        headers: {
+          'x-api-key': apiKey,
+          'anthropic-version': '2023-06-01',
+          'content-type': 'application/json'
+        }
+      }
+    );
 
-    const raw = message.content[0].text.trim();
+    const raw = response.data.content[0].text.trim();
     const parsed = JSON.parse(raw);
     res.json({ results: parsed });
   } catch (err) {
-    res.status(500).json({ error: `Optimization failed: ${err.message}` });
+    const msg = err.response?.data?.error?.message || err.message;
+    res.status(500).json({ error: `Optimization failed: ${msg}` });
   }
 });
 
