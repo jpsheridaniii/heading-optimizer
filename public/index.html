@@ -216,6 +216,7 @@
       <div class="empty-state">Pull headings from a URL to get started.</div>
     </div>
     <div class="actions" id="actions" style="display:none">
+      <button class="btn-muted" onclick="newAnalysis()">↩ New Analysis</button>
       <button class="btn-muted" onclick="copyCSV()">📋 Copy as CSV</button>
     </div>
   </div>
@@ -372,6 +373,20 @@
       </table>`;
 
     document.getElementById('actions').style.display = 'flex';
+  }
+
+  function newAnalysis() {
+    headings = [];
+    results = [];
+    document.getElementById('pageUrl').value = '';
+    document.getElementById('keyword').value = '';
+    document.getElementById('tableContainer').innerHTML = '<div class="empty-state">Pull headings from a URL to get started.</div>';
+    document.getElementById('actions').style.display = 'none';
+    document.getElementById('optimizeBtn').disabled = true;
+    setStatus('pullStatus', '');
+    setStatus('optimizeStatus', '');
+    document.getElementById('pageUrl').focus();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function copyCSV() {
