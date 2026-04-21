@@ -217,7 +217,7 @@
     </div>
     <div class="actions" id="actions" style="display:none">
       <button class="btn-muted" onclick="newAnalysis()">↩ New Analysis</button>
-      <button class="btn-muted" onclick="copyCSV()">📋 Copy as CSV</button>
+      <button class="btn-muted" onclick="exportCSV()">⬇ Export CSV</button>
     </div>
   </div>
 
@@ -390,15 +390,21 @@
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function copyCSV() {
+  function exportCSV() {
     const header = 'Original Heading,Optimized Heading,Level,Char Count A,Char Count B,Score,Notes';
     const rows = results.map(r =>
       [r.original || '', r.optimized || '', r.level, r.original?.length || 0, r.optimized?.length || '', r.score || '', r.notes || '']
         .map(v => `"${String(v).replace(/"/g, '""')}"`)
         .join(',')
     );
-    navigator.clipboard.writeText([header, ...rows].join('\n'));
-    alert('CSV copied to clipboard!');
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'heading-optimizer-results.csv';
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   function escHtml(str) {
