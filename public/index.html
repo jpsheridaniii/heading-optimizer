@@ -151,6 +151,16 @@
     /* ── Notes ── */
     .notes-cell { font-size: 0.78rem; color: var(--muted); font-style: italic; }
 
+    /* ── Score ── */
+    .score-badge {
+      display: inline-block; padding: 0.15rem 0.5rem;
+      border-radius: 0; font-size: 0.75rem; font-weight: 700;
+    }
+    .score-good  { background: #00D9FF15; color: var(--cyan);  border: 1px solid #00D9FF30; }
+    .score-mid   { background: #F59E0B15; color: var(--amber); border: 1px solid #F59E0B30; }
+    .score-poor  { background: #EF444415; color: var(--red);   border: 1px solid #EF444430; }
+    .no-change   { color: var(--muted); font-style: italic; }
+
     /* ── Actions ── */
     .actions { display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: flex-end; }
 
@@ -306,18 +316,41 @@
     }
   }
 
+  function scoreClass(score) {
+    if (!score) return '';
+    if (score >= 8) return 'score-good';
+    if (score >= 5) return 'score-mid';
+    return 'score-poor';
+  }
+
   function renderTable() {
     if (!results.length) return;
     const container = document.getElementById('tableContainer');
     const rows = results.map(r => {
-      const aLen = r.original.length;
+      const isNew = !r.original;
+      const isNoChange = r.optimized && r.original && r.optimized === r.original;
+      const aLen = r.original ? r.original.length : 0;
       const bLen = r.optimized ? r.optimized.length : 0;
+
+      const colA = isNew
+        ? '<span style="color:var(--muted);font-style:italic">New suggestion</span>'
+        : escHtml(r.original);
+
+      const colB = isNoChange
+        ? `<span class="no-change">${escHtml(r.optimized)}</span>`
+        : (r.optimized ? escHtml(r.optimized) : '<span style="color:var(--muted)">—</span>');
+
+      const scoreBadge = r.score
+        ? `<span class="score-badge ${scoreClass(r.score)}">${r.score}/10</span>`
+        : '<span style="color:var(--muted)">—</span>';
+
       return `<tr>
-        <td>${escHtml(r.original)}</td>
-        <td>${r.optimized ? escHtml(r.optimized) : '<span style="color:var(--muted)">—</span>'}</td>
+        <td>${colA}</td>
+        <td>${colB}</td>
         <td><span class="badge">${r.level}</span></td>
-        <td class="${charClass(aLen, r.level)}">${aLen}</td>
+        <td class="${aLen ? charClass(aLen, r.level) : 'char-none'}">${aLen || '—'}</td>
         <td class="${bLen ? charClass(bLen, r.level) : 'char-none'}">${bLen || '—'}</td>
+        <td>${scoreBadge}</td>
         <td class="notes-cell">${r.notes ? escHtml(r.notes) : ''}</td>
       </tr>`;
     }).join('');
@@ -331,6 +364,7 @@
             <th>Level</th>
             <th>Char (A)</th>
             <th>Char (B)</th>
+            <th>Score</th>
             <th>Notes</th>
           </tr>
         </thead>
@@ -341,9 +375,9 @@
   }
 
   function copyCSV() {
-    const header = 'Original Heading,Optimized Heading,Level,Char Count A,Char Count B,Notes';
+    const header = 'Original Heading,Optimized Heading,Level,Char Count A,Char Count B,Score,Notes';
     const rows = results.map(r =>
-      [r.original, r.optimized, r.level, r.original.length, r.optimized?.length || '', r.notes]
+      [r.original || '', r.optimized || '', r.level, r.original?.length || 0, r.optimized?.length || '', r.score || '', r.notes || '']
         .map(v => `"${String(v).replace(/"/g, '""')}"`)
         .join(',')
     );
