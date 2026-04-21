@@ -156,6 +156,20 @@
 
     /* ── Empty state ── */
     .empty-state { text-align: center; padding: 3rem; color: var(--muted); font-size: 0.85rem; }
+
+    /* ── Sheets settings ── */
+    .sheets-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    textarea {
+      width: 100%; padding: 0.6rem 0.9rem;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 0; color: var(--text);
+      font-family: 'Poppins', sans-serif; font-size: 0.78rem;
+      outline: none; resize: vertical; min-height: 80px;
+      transition: border-color 0.2s;
+    }
+    textarea::placeholder { color: var(--muted); }
+    textarea:focus { border-color: var(--cyan); }
+    .field-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 0.05em; }
   </style>
 </head>
 <body>
@@ -200,13 +214,33 @@
   </div>
 
   <div class="panel">
+    <div class="panel-title">📋 Google Sheets Export (optional)</div>
+    <div class="sheets-grid">
+      <div>
+        <div class="field-label">Google Sheet ID</div>
+        <input type="text" id="sheetId" placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms" />
+      </div>
+      <div>
+        <div class="field-label">Service Account Credentials (JSON)</div>
+        <textarea id="sheetsCreds" placeholder='{"type":"service_account","project_id":"...","private_key":"...","client_email":"..."}'></textarea>
+      </div>
+    </div>
+    <div style="margin-top:0.75rem">
+      <button class="btn-muted" onclick="saveSheetSettings()">Save Settings</button>
+      <span class="api-key-saved" id="sheetsSaved" style="display:none;margin-left:0.75rem">✓ Settings saved</span>
+    </div>
+  </div>
+
+  <div class="panel">
     <div class="panel-title">📊 Results</div>
     <div class="table-wrap" id="tableContainer">
       <div class="empty-state">Pull headings from a URL to get started.</div>
     </div>
     <div class="actions" id="actions" style="display:none">
       <button class="btn-muted" onclick="copyCSV()">📋 Copy as CSV</button>
+      <button class="btn-muted" id="sheetsBtn" onclick="exportToSheets()">📊 Export to Google Sheets</button>
     </div>
+    <div class="status" id="sheetsStatus"></div>
   </div>
 
 </main>
@@ -221,7 +255,50 @@
       document.getElementById('apiKey').value = saved;
       document.getElementById('apiKeySaved').style.display = 'inline';
     }
+    const sheetId = localStorage.getItem('sheet_id');
+    const sheetsCreds = localStorage.getItem('sheets_creds');
+    if (sheetId) document.getElementById('sheetId').value = sheetId;
+    if (sheetsCreds) document.getElementById('sheetsCreds').value = sheetsCreds;
+    if (sheetId && sheetsCreds) document.getElementById('sheetsSaved').style.display = 'inline';
   });
+
+  function saveSheetSettings() {
+    const sheetId = document.getElementById('sheetId').value.trim();
+    const creds = document.getElementById('sheetsCreds').value.trim();
+    if (!sheetId || !creds) return;
+    localStorage.setItem('sheet_id', sheetId);
+    localStorage.setItem('sheets_creds', creds);
+    document.getElementById('sheetsSaved').style.display = 'inline';
+  }
+
+  async function exportToSheets() {
+    const sheetId = localStorage.getItem('sheet_id');
+    const credentials = localStorage.getItem('sheets_creds');
+    if (!sheetId || !credentials) {
+      setStatus('sheetsStatus', 'Please enter your Sheet ID and service account credentials above.', true);
+      return;
+    }
+    if (!results.length) return;
+
+    const btn = document.getElementById('sheetsBtn');
+    btn.disabled = true;
+    setStatus('sheetsStatus', 'Exporting to Google Sheets...');
+
+    try {
+      const res = await fetch('/api/export-sheets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ results, sheetId, credentials })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setStatus('sheetsStatus', `✓ Exported ${data.rows} rows to Google Sheets.`);
+    } catch (err) {
+      setStatus('sheetsStatus', `Error: ${err.message}`, true);
+    } finally {
+      btn.disabled = false;
+    }
+  }
 
   function saveApiKey() {
     const key = document.getElementById('apiKey').value.trim();

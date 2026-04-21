@@ -4,6 +4,7 @@ const axios = require('axios');
 const cheerio = require('cheerio');
 const cors = require('cors');
 const path = require('path');
+const { google } = require('googleapis');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -93,6 +94,45 @@ Respond ONLY with a JSON array in this exact format, no preamble, no markdown:
   } catch (err) {
     const msg = err.response?.data?.error?.message || err.message;
     res.status(500).json({ error: `Optimization failed: ${msg}` });
+  }
+});
+
+// --- Route: Export to Google Sheets ---
+app.post('/api/export-sheets', async (req, res) => {
+  const { results, sheetId, credentials } = req.body;
+  if (!results || !results.length) return res.status(400).json({ error: 'No results to export' });
+  if (!sheetId) return res.status(400).json({ error: 'Sheet ID is required' });
+  if (!credentials) return res.status(400).json({ error: 'Service account credentials are required' });
+
+  try {
+    const creds = typeof credentials === 'string' ? JSON.parse(credentials) : credentials;
+    const auth = new google.auth.GoogleAuth({
+      credentials: creds,
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    const sheets = google.sheets({ version: 'v4', auth });
+
+    const header = [['Original Heading (A)', 'Optimized Heading (B)', 'Level', 'Char (A)', 'Char (B)', 'Notes']];
+    const rows = results.map(r => [
+      r.original,
+      r.optimized || '',
+      r.level,
+      r.original.length,
+      r.optimized ? r.optimized.length : '',
+      r.notes || ''
+    ]);
+
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: 'Sheet1!A1',
+      valueInputOption: 'RAW',
+      requestBody: { values: [...header, ...rows] }
+    });
+
+    res.json({ success: true, rows: rows.length });
+  } catch (err) {
+    res.status(500).json({ error: `Sheets export failed: ${err.message}` });
   }
 });
 
