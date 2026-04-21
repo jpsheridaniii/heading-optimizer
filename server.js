@@ -13,8 +13,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-
 // --- Route: Pull headings from URL ---
 app.post('/api/pull-headings', async (req, res) => {
   const { url } = req.body;
@@ -43,8 +41,11 @@ app.post('/api/pull-headings', async (req, res) => {
 
 // --- Route: Optimize headings with Claude ---
 app.post('/api/optimize', async (req, res) => {
-  const { headings, keyword } = req.body;
+  const { headings, keyword, apiKey } = req.body;
   if (!headings || !headings.length) return res.status(400).json({ error: 'No headings provided' });
+  if (!apiKey) return res.status(400).json({ error: 'API key is required' });
+
+  const anthropic = new Anthropic({ apiKey });
 
   const headingList = headings
     .map((h, i) => `${i + 1}. [${h.level}] ${h.text}`)

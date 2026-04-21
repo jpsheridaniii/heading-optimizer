@@ -85,12 +85,33 @@
     .notes-cell { font-size: 0.82rem; color: #666; font-style: italic; }
     .actions { display: flex; gap: 0.5rem; margin-top: 1rem; justify-content: flex-end; }
     .empty-state { text-align: center; padding: 3rem; color: #aaa; font-size: 0.9rem; }
+    .api-key-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+    .api-key-saved { font-size: 0.8rem; color: #16a34a; font-weight: 600; }
+    input[type="password"] {
+      flex: 1; min-width: 200px;
+      padding: 0.6rem 0.9rem;
+      border: 1.5px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="password"]:focus { border-color: #4f46e5; }
   </style>
 </head>
 <body>
 <div class="container">
   <h1>🔤 Heading Optimizer</h1>
   <p class="subtitle">Pull H1–H6 tags from any URL and optimize them with Claude AI</p>
+
+  <div class="panel">
+    <h2>API Key</h2>
+    <div class="api-key-row">
+      <input type="password" id="apiKey" placeholder="sk-ant-..." />
+      <button class="btn-blue" onclick="saveApiKey()">Save Key</button>
+      <span class="api-key-saved" id="apiKeySaved" style="display:none">✓ Key saved</span>
+    </div>
+  </div>
 
   <div class="panel">
     <h2>Step 1 — Pull Headings</h2>
@@ -125,6 +146,26 @@
   let headings = [];
   let results = [];
 
+  // Load saved API key on page load
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('anthropic_api_key');
+    if (saved) {
+      document.getElementById('apiKey').value = saved;
+      document.getElementById('apiKeySaved').style.display = 'inline';
+    }
+  });
+
+  function saveApiKey() {
+    const key = document.getElementById('apiKey').value.trim();
+    if (!key) return;
+    localStorage.setItem('anthropic_api_key', key);
+    document.getElementById('apiKeySaved').style.display = 'inline';
+  }
+
+  function getApiKey() {
+    return document.getElementById('apiKey').value.trim() || localStorage.getItem('anthropic_api_key') || '';
+  }
+
   function setStatus(id, msg, isError = false) {
     const el = document.getElementById(id);
     el.textContent = msg;
@@ -139,6 +180,7 @@
   async function pullHeadings() {
     const url = document.getElementById('pageUrl').value.trim();
     if (!url) return setStatus('pullStatus', 'Please enter a URL.', true);
+    if (!getApiKey()) return setStatus('pullStatus', 'Please enter your Anthropic API key above.', true);
 
     const btn = document.getElementById('pullBtn');
     btn.disabled = true;
@@ -168,6 +210,8 @@
 
   async function optimizeHeadings() {
     if (!headings.length) return;
+    const apiKey = getApiKey();
+    if (!apiKey) return setStatus('optimizeStatus', 'Please enter your Anthropic API key above.', true);
     const keyword = document.getElementById('keyword').value.trim();
 
     const btn = document.getElementById('optimizeBtn');
@@ -178,7 +222,7 @@
       const res = await fetch('/api/optimize', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ headings, keyword })
+        body: JSON.stringify({ headings, keyword, apiKey })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
