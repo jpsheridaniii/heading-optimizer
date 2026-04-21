@@ -48,25 +48,33 @@ app.post('/api/optimize', async (req, res) => {
     .map((h, i) => `${i + 1}. [${h.level}] ${h.text}`)
     .join('\n');
 
-  const prompt = `You are an SEO content strategist. Optimize the following page headings for the primary keyword/topic: "${keyword || 'not specified'}".
+  const prompt = `You are an SEO content strategist. Analyze the following page headings for the primary keyword/topic: "${keyword || 'not specified'}".
 
-For each heading, return an improved version that:
-- Naturally incorporates the primary keyword or a semantic variant where appropriate
-- Is clear, specific, and compelling
-- Maintains the original intent and hierarchy
-- Stays under 70 characters for H1, under 60 for H2–H6
-- Avoids keyword stuffing
+## Scoring Rubric (score each heading 1–10)
+- **Keyword presence** (3 pts): Primary keyword or strong semantic variant naturally included
+- **Length** (2 pts): H1 under 70 chars, H2–H6 under 60 chars
+- **Clarity & specificity** (2 pts): Concrete, descriptive, not vague or generic
+- **Compelling language** (2 pts): Action-oriented, benefit-driven, or curiosity-inducing
+- **Hierarchy fit** (1 pt): Appropriate for its heading level (H1 = page topic, H2 = section, etc.)
+
+## CRITICAL RULES — follow exactly, no exceptions:
+1. Score every heading using the rubric above.
+2. If a heading scores 8, 9, or 10: the "optimized" field MUST be the EXACT SAME STRING as "original". Do not change a single character. Notes should say "No change needed".
+3. If a heading scores 7 or below: rewrite it to improve the score. The "optimized" field must differ from "original".
+4. Only add new headings (with "original" set to "") if there is a clear structural gap in the page. Do not add new headings just to pad the list.
+5. Do not reorder existing headings.
 
 Here are the headings to optimize:
 ${headingList}
 
-Respond ONLY with a JSON array in this exact format, no preamble, no markdown:
+Respond ONLY with a valid JSON array — no preamble, no markdown fences, no explanation:
 [
   {
-    "original": "original heading text",
-    "optimized": "optimized heading text",
+    "original": "exact original heading text",
+    "optimized": "rewritten or identical heading text",
     "level": "H1",
-    "notes": "brief explanation of change"
+    "score": 7,
+    "notes": "brief explanation of score and changes"
   }
 ]`;
 
